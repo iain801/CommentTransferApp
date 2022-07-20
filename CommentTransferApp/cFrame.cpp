@@ -1,10 +1,13 @@
 #include "cFrame.h"
 #include <string>
+#include <algorithm>
+#include <cctype>
+#include <locale>
+#include <codecvt>
 
 wxBEGIN_EVENT_TABLE(cFrame, wxFrame)
 	EVT_BUTTON(10001, PerformTransfer)
 wxEND_EVENT_TABLE()
-
 
 cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoint(100, 100), wxSize(340, 400))
 {
@@ -19,7 +22,6 @@ cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoi
 
 	wxStreamToTextRedirector redirect(output);
 
-	std::cout << "This tool will copy the \"I\" column" << std::endl;
 	std::cout << "ENSURE DATA IS ORDERED IN ALL SHEETS" << std::endl;
 }
 
@@ -71,11 +73,11 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 			std::cout << "ERROR: Mismatched sheet counts" << std::endl;
 		else for (int sheet = 0; sheet < numSrcSheets; sheet++) 
 		{
-			auto srcSheet = src->getSheet(0);
-			auto destSheet = dest->getSheet(0);
+			auto srcSheet = src->getSheet(sheet);
+			auto destSheet = dest->getSheet(sheet);
 			if (srcSheet && destSheet)
 			{
-				std::cout << "Loaded sheet " << sheet << std::endl;
+				std::cout << "Loaded sheet " << sheet << ": " << std::wstring(srcSheet->name()) << std::endl;
 				CopySheet(srcSheet, destSheet);
 			}
 			else 
@@ -85,7 +87,8 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 		}
 	}
 
-	dest->save(destName.c_str());
+	dest->save(destName.replace(destName.find(L".xls"), 4, L"_processed.xls").c_str());
+	std::cout << "Output saved as: " << destName  << std::endl;
 
 skip:
 	src->release();
@@ -98,18 +101,19 @@ skip:
 void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet) 
 {
 	wxStreamToTextRedirector redirect(output);
-	for (int row = srcSheet->firstRow(); row < srcSheet->lastRow(); ++row)
+	
+	int col = 0;
+	if ((col = getCommentCol(srcSheet)) != getCommentCol(destSheet))
 	{
-		int col = 0;
-		if ((col = getCommentCol(srcSheet)) != getCommentCol(destSheet))
-		{
-			std::cout << "ERROR: ";
-		}
-		else 
+		std::cout << "ERROR: Mismatched sheets " << srcSheet->name() << " and " << destSheet->name() << std::endl;
+	}
+	else
+	{
+		std::cout << "Inserting comments at column " << (char)(col + 'A') << std::endl;
+		for (int row = srcSheet->firstRow(); row < srcSheet->lastRow(); ++row)
 		{
 			CopyCell(srcSheet, destSheet, row, col);
 		}
-		
 	}
 }
 
@@ -122,7 +126,7 @@ void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, 
 	{
 		const wchar_t* s = srcSheet->readFormula(row, col);
 		destSheet->writeFormula(row, col, s, srcFormat);
-		std::cout << (s ? s : L"null") << " [formula]";
+		std::cout << std::wstring(s ? s : L"null") << " [formula]" << std::endl;
 	}
 	else
 	{
@@ -130,47 +134,46 @@ void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, 
 		{
 		case libxl::CELLTYPE_EMPTY:
 		{
-			std::cout << "[empty]";
+			//std::cout << "[empty]" << std::endl;
 			destSheet->writeStr(row, col, L"", srcFormat, libxl::CELLTYPE_EMPTY);
 			break;
 		}
 		case libxl::CELLTYPE_NUMBER:
 		{
 			double d = srcSheet->readNum(row, col);
-			std::cout << d << " [number]";
+			std::cout << d << " [number] << std::endl";
 			destSheet->writeNum(row, col, d, srcFormat);
 			break;
 		}
 		case libxl::CELLTYPE_STRING:
 		{
 			const wchar_t* s = srcSheet->readStr(row, col);
-			std::cout << (s ? s : L"null") << " [string]";
+			std::cout << std::wstring(s ? s : L"null") << " [string]" << std::endl;
 			destSheet->writeStr(row, col, s, srcFormat);
 			break;
 		}
 		case libxl::CELLTYPE_BOOLEAN:
 		{
 			bool b = srcSheet->readBool(row, col);
-			std::cout << (b ? "true" : "false") << " [boolean]";
+			std::cout << (b ? "true" : "false") << " [boolean]" << std::endl;
 			destSheet->writeBool(row, col, b, srcFormat);
 			break;
 		}
 		case libxl::CELLTYPE_BLANK:
 		{
-			std::cout << "[blank]";
+			//std::cout << "[blank]" << std::endl;
 			destSheet->writeBlank(row, col, srcFormat);
 			break;
 		}
 		case libxl::CELLTYPE_ERROR:
 		{
 			auto e = srcSheet->readError(row, col);
-			std::cout << "[error]";
+			std::cout << "[error]" << std::endl;
 			destSheet->writeError(row, col, e, srcFormat);
 			break;
 		}
 		}
 	}
-	std::cout << std::endl;
 }
 
 int cFrame::getCommentCol(libxl::Sheet* sheet)
@@ -179,10 +182,17 @@ int cFrame::getCommentCol(libxl::Sheet* sheet)
 	
 	bool commentsFound = false;
 	int row = std::stoi(rowInput->GetLineText(0).ToStdString()) - 1;
-	for (int col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
+	int col = 0;
+	for (col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
 	{
-		auto cellType = sheet->cellType(row, col);
+		if (sheet->cellType(row, col) == libxl::CELLTYPE_STRING)
+		{
+			std::wstring cellData(sheet->readStr(row, col));
+			std::transform(cellData.begin(), cellData.end(), cellData.begin(),
+				[](wchar_t c) { return tolower(c); });
+			if (cellData.compare(L"comments") == 0)
+				return col;
+		}
 	}
-
-	return 0;
+	return sheet->lastFilledCol();
 }
