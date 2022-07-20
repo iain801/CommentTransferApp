@@ -28,8 +28,9 @@ public:
 	wxDECLARE_EVENT_TABLE();
 
 private:
-	void CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet);
+	void CopyBook(std::wstring srcPath, std::wstring destPath, int headRow);
+	void CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int headRow);
 	void CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, int col);
-	int getCommentCol(libxl::Sheet* sheet);
+	int getCommentCol(libxl::Sheet* sheet, int row);
 };
 

@@ -35,36 +35,49 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 {
 	wxStreamToTextRedirector redirect(output);
 
-	auto srcName = srcFile->GetPath().ToStdWstring();
-	auto destName = dstFile->GetPath().ToStdWstring();
+	auto srcPath = srcFile->GetPath().ToStdWstring();
+	auto destPath = dstFile->GetPath().ToStdWstring();
 	output->Clear();
+	int row = std::stoi(rowInput->GetLineText(0).ToStdString()) - 1;
+
+	CopyBook(srcPath, destPath, row);
+
+	evt.Skip();
+}
+
+void cFrame::CopyBook(std::wstring srcPath, std::wstring destPath, int headRow)
+{
+	if (srcPath.compare(destPath) == 0) {
+		std::cout << "ERROR: Duplicate input paths" << std::endl;
+		return;
+	}
 
 	libxl::Book* src = nullptr;
 	libxl::Book* dest = nullptr;
 
-	if (srcName.find(L".xlsx") != std::wstring::npos)
+	if (srcPath.find(L".xlsx") != std::wstring::npos)
 		src = xlCreateXMLBook();
-	else if (srcName.find(L".xls") != std::wstring::npos)
+	else if (srcPath.find(L".xls") != std::wstring::npos)
 		src = xlCreateBook();
 	else {
-		std::cout << "Invaid source filetype" << std::endl;
-		goto skip;
-	}
-	std::cout << "Created source book" << std::endl;
-
-	if (destName.find(L".xlsx") != std::wstring::npos)
-		dest = xlCreateXMLBook();
-	else if (destName.find(L".xls") != std::wstring::npos)
-		dest = xlCreateBook();
-	else {
-		std::cout << "Invaid destination filetype" << std::endl;
-		goto skip;
+		std::cout << "ERROR: Invaid source filetype" << std::endl;
+		return;
 	}
 	src->setKey(L"Iain Weissburg", L"windows-2a242a0d01cfe90a6ab8666baft2map2");
+	std::cout << "Created source book" << std::endl;
+
+	if (destPath.find(L".xlsx") != std::wstring::npos)
+		dest = xlCreateXMLBook();
+	else if (destPath.find(L".xls") != std::wstring::npos)
+		dest = xlCreateBook();
+	else {
+		std::cout << "ERROR: Invaid destination filetype" << std::endl;
+		return;
+	}
 	dest->setKey(L"Iain Weissburg", L"windows-2a242a0d01cfe90a6ab8666baft2map2");
 	std::cout << "Created destination book" << std::endl;
 
-	if (src->load(srcName.c_str()) && dest->load(destName.c_str()))
+	if (src->load(srcPath.c_str()) && dest->load(destPath.c_str()))
 	{
 		std::cout << "Loaded books" << std::endl;
 		int numSrcSheets = src->sheetCount();
@@ -78,7 +91,7 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 			if (srcSheet && destSheet)
 			{
 				std::cout << "Loaded sheet " << sheet << ": " << std::wstring(srcSheet->name()) << std::endl;
-				CopySheet(srcSheet, destSheet);
+				CopySheet(srcSheet, destSheet, headRow);
 			}
 			else 
 			{
@@ -87,23 +100,18 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 		}
 	}
 
-	dest->save(destName.replace(destName.find(L".xls"), 4, L"_processed.xls").c_str());
-	std::cout << "Output saved as: " << destName  << std::endl;
+	dest->save(destPath.replace(destPath.find(L".xls"), 4, L"_processed.xls").c_str());
+	std::cout << "Output saved as: " << destPath  << std::endl;
 
-skip:
 	src->release();
 	dest->release();
-
-	evt.Skip();
 }
 
 
-void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet) 
+void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int headRow) 
 {
-	wxStreamToTextRedirector redirect(output);
-	
 	int col = 0;
-	if ((col = getCommentCol(srcSheet)) != getCommentCol(destSheet))
+	if ((col = getCommentCol(srcSheet, headRow)) != getCommentCol(destSheet, headRow))
 	{
 		std::cout << "ERROR: Mismatched sheets " << srcSheet->name() << " and " << destSheet->name() << std::endl;
 	}
@@ -117,9 +125,8 @@ void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet)
 	}
 }
 
-void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, int col) {
-	wxStreamToTextRedirector redirect(output);
-
+void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, int col) 
+{
 	auto cellType = srcSheet->cellType(row, col);
 	auto srcFormat = srcSheet->cellFormat(row, col);
 	if (srcSheet->isFormula(row, col))
@@ -176,12 +183,9 @@ void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, 
 	}
 }
 
-int cFrame::getCommentCol(libxl::Sheet* sheet)
+int cFrame::getCommentCol(libxl::Sheet* sheet, int row)
 {
-	wxStreamToTextRedirector redirect(output);
-	
 	bool commentsFound = false;
-	int row = std::stoi(rowInput->GetLineText(0).ToStdString()) - 1;
 	int col = 0;
 	for (col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
 	{
