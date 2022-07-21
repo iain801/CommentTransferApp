@@ -34,7 +34,6 @@ cFrame::~cFrame()
 void cFrame::PerformTransfer(wxCommandEvent& evt)
 {
 	wxStreamToTextRedirector redirect(output);
-
 	auto srcPath = srcFile->GetPath().ToStdWstring();
 	auto destPath = dstFile->GetPath().ToStdWstring();
 	output->Clear();
