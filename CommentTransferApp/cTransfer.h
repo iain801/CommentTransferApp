@@ -22,6 +22,7 @@ private:
 	
 	void CopySheet();
 	void CopyCell(int row, int col);
-	int getCommentCol(libxl::Sheet* sheet);
+	void CopyCell(int srcRow, int destRow, int srcCol, int destCol);
+	int getCol(libxl::Sheet* sheet, std::wstring label);
 };
 

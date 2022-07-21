@@ -75,29 +75,32 @@ void cTransfer::CopyBook()
 
 void cTransfer::CopySheet()
 {
-	int col = 0;
-	if ((col = getCommentCol(srcSheet)) != getCommentCol(destSheet))
+	int srcCol = getCol(srcSheet, L"comment");
+	int destCol = getCol(destSheet, L"comment");
+	if ( srcCol != destCol )
+		std::wcout << "WARNING: Mismatched sheets " << srcSheet->name() << " and " << destSheet->name() << std::endl;
+	
+	std::wcout << "Inserting comments at column " << (char)(destCol + 'A') << " from column " << (char)(srcCol + 'A') << std::endl;
+	for (int row = srcSheet->firstRow(); row < srcSheet->lastRow(); ++row)
 	{
-		std::wcout << "ERROR: Mismatched sheets " << srcSheet->name() << " and " << destSheet->name() << std::endl;
+		CopyCell(row, row, srcCol, destCol);
 	}
-	else
-	{
-		std::wcout << "Inserting comments at column " << (char)(col + 'A') << std::endl;
-		for (int row = srcSheet->firstRow(); row < srcSheet->lastRow(); ++row)
-		{
-			CopyCell(row, col);
-		}
-	}
+	
 }
 
 void cTransfer::CopyCell(int row, int col)
 {
-	auto cellType = srcSheet->cellType(row, col);
-	auto srcFormat = srcSheet->cellFormat(row, col);
-	if (srcSheet->isFormula(row, col))
+	CopyCell(row, row, col, col);
+}
+
+void cTransfer::CopyCell(int srcRow, int destRow, int srcCol, int destCol)
+{
+	auto cellType = srcSheet->cellType(srcRow, srcCol);
+	auto srcFormat = srcSheet->cellFormat(srcRow, srcCol);
+	if (srcSheet->isFormula(srcRow, srcCol))
 	{
-		const wchar_t* s = srcSheet->readFormula(row, col);
-		destSheet->writeFormula(row, col, s, srcFormat);
+		const wchar_t* s = srcSheet->readFormula(srcRow, srcCol);
+		destSheet->writeFormula(destRow, destCol, s, srcFormat);
 		std::wcout << std::wstring(s ? s : L"null") << " [formula]" << std::endl;
 	}
 	else
@@ -107,48 +110,48 @@ void cTransfer::CopyCell(int row, int col)
 		case CELLTYPE_EMPTY:
 		{
 			//std::wcout << "[empty]" << std::endl;
-			destSheet->writeStr(row, col, L"", srcFormat, CELLTYPE_EMPTY);
+			destSheet->writeStr(destRow, destCol, L"", srcFormat, CELLTYPE_EMPTY);
 			break;
 		}
 		case CELLTYPE_NUMBER:
 		{
-			double d = srcSheet->readNum(row, col);
+			double d = srcSheet->readNum(srcRow, srcCol);
 			std::wcout << d << " [number] << std::endl";
-			destSheet->writeNum(row, col, d, srcFormat);
+			destSheet->writeNum(destRow, destCol, d, srcFormat);
 			break;
 		}
 		case CELLTYPE_STRING:
 		{
-			const wchar_t* s = srcSheet->readStr(row, col);
+			const wchar_t* s = srcSheet->readStr(srcRow, srcCol);
 			std::wcout << std::wstring(s ? s : L"null") << " [string]" << std::endl;
-			destSheet->writeStr(row, col, s, srcFormat);
+			destSheet->writeStr(destRow, destCol, s, srcFormat);
 			break;
 		}
 		case CELLTYPE_BOOLEAN:
 		{
-			bool b = srcSheet->readBool(row, col);
+			bool b = srcSheet->readBool(srcRow, srcCol);
 			std::wcout << (b ? "true" : "false") << " [boolean]" << std::endl;
-			destSheet->writeBool(row, col, b, srcFormat);
+			destSheet->writeBool(destRow, destCol, b, srcFormat);
 			break;
 		}
 		case CELLTYPE_BLANK:
 		{
 			//std::wcout << "[blank]" << std::endl;
-			destSheet->writeBlank(row, col, srcFormat);
+			destSheet->writeBlank(destRow, destCol, srcFormat);
 			break;
 		}
 		case CELLTYPE_ERROR:
 		{
-			auto e = srcSheet->readError(row, col);
+			auto e = srcSheet->readError(srcRow, srcCol);
 			std::wcout << "[error]" << std::endl;
-			destSheet->writeError(row, col, e, srcFormat);
+			destSheet->writeError(destRow, destCol, e, srcFormat);
 			break;
 		}
 		}
 	}
 }
 
-int cTransfer::getCommentCol(Sheet* sheet)
+int cTransfer::getCol(Sheet* sheet, std::wstring label)
 {
 	bool commentsFound = false;
 	int col = 0;
@@ -159,7 +162,7 @@ int cTransfer::getCommentCol(Sheet* sheet)
 			std::wstring cellData(sheet->readStr(headRow, col));
 			std::transform(cellData.begin(), cellData.end(), cellData.begin(),
 				[](wchar_t c) { return tolower(c); });
-			if (cellData.find(L"comment") != std::wstring::npos)
+			if (cellData.find(label) != std::wstring::npos)
 				return col;
 		}
 	}

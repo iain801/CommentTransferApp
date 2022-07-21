@@ -3,17 +3,17 @@
 #include <iostream>
 
 wxBEGIN_EVENT_TABLE(cFrame, wxFrame)
-EVT_BUTTON(10001, PerformTransfer)
+	EVT_BUTTON(10001, PerformTransfer)
 wxEND_EVENT_TABLE()
 
 
 
 //if using output, change to wxSize(340, 400)
-cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoint(100, 100), wxSize(340, 160), wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
+cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoint(100, 100), wxSize(340, 170), wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
 {
-	btn1 = new wxButton(this, 10001, "Copy Comments", wxPoint(10, 85), wxSize(150, 30));
-	rowText = new wxStaticText(this, wxID_ANY, "Start row: ", wxPoint(205, 92));
-	rowInput = new wxTextCtrl(this, wxID_ANY, "6", wxPoint(260, 90), wxSize(30, 20), 0L, wxIntegerValidator<unsigned int>());
+	btn1 = new wxButton(this, 10001, "Copy Comments", wxPoint(10, 90), wxSize(150, 30));
+	rowText = new wxStaticText(this, wxID_ANY, "Start row: ", wxPoint(205, 97));
+	rowInput = new wxTextCtrl(this, wxID_ANY, "6", wxPoint(260, 95), wxSize(30, 20), 0L, wxIntegerValidator<unsigned int>());
 	srcText = new wxStaticText(this, wxID_ANY, "Commented Spreadsheet: ", wxPoint(10, 2));
 	srcFile = new wxFilePickerCtrl(this, wxID_ANY, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 20), wxSize(300, 20));
 	srcText = new wxStaticText(this, wxID_ANY, "Data Spreadsheet: ", wxPoint(10, 42));
