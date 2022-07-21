@@ -6,10 +6,10 @@
 #include <codecvt>
 
 wxBEGIN_EVENT_TABLE(cFrame, wxFrame)
-	EVT_BUTTON(10001, PerformTransfer)
+EVT_BUTTON(10001, PerformTransfer)
 wxEND_EVENT_TABLE()
 
-cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoint(100, 100), wxSize(340, 400))
+cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoint(100, 100), wxSize(340, 400), wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
 {
 	btn1 = new wxButton(this, 10001, "Copy Comments", wxPoint(45, 10), wxSize(150, 30));
 	rowText = new wxStaticText(this, wxID_ANY, "Start row: ", wxPoint(205, 17));
@@ -30,12 +30,11 @@ cFrame::~cFrame()
 
 }
 
-
 void cFrame::PerformTransfer(wxCommandEvent& evt)
 {
 	wxStreamToTextRedirector redirect(output);
-	auto srcPath = srcFile->GetPath().ToStdWstring();
-	auto destPath = dstFile->GetPath().ToStdWstring();
+	std::wstring srcPath = srcFile->GetPath().ToStdWstring();
+	std::wstring destPath = dstFile->GetPath().ToStdWstring();
 	output->Clear();
 	int row = std::stoi(rowInput->GetLineText(0).ToStdString()) - 1;
 
@@ -44,6 +43,8 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 	evt.Skip();
 }
 
+using namespace libxl;
+
 void cFrame::CopyBook(std::wstring srcPath, std::wstring destPath, int headRow)
 {
 	if (srcPath.compare(destPath) == 0) {
@@ -51,8 +52,8 @@ void cFrame::CopyBook(std::wstring srcPath, std::wstring destPath, int headRow)
 		return;
 	}
 
-	libxl::Book* src = nullptr;
-	libxl::Book* dest = nullptr;
+	Book* src = nullptr;
+	Book* dest = nullptr;
 
 	if (srcPath.find(L".xlsx") != std::wstring::npos)
 		src = xlCreateXMLBook();
@@ -107,7 +108,7 @@ void cFrame::CopyBook(std::wstring srcPath, std::wstring destPath, int headRow)
 }
 
 
-void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int headRow) 
+void cFrame::CopySheet(Sheet* srcSheet, Sheet* destSheet, int headRow) 
 {
 	int col = 0;
 	if ((col = getCommentCol(srcSheet, headRow)) != getCommentCol(destSheet, headRow))
@@ -124,7 +125,7 @@ void cFrame::CopySheet(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int head
 	}
 }
 
-void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, int col) 
+void cFrame::CopyCell(Sheet* srcSheet, Sheet* destSheet, int row, int col) 
 {
 	auto cellType = srcSheet->cellType(row, col);
 	auto srcFormat = srcSheet->cellFormat(row, col);
@@ -138,40 +139,40 @@ void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, 
 	{
 		switch (cellType)
 		{
-		case libxl::CELLTYPE_EMPTY:
+		case CELLTYPE_EMPTY:
 		{
 			//std::cout << "[empty]" << std::endl;
-			destSheet->writeStr(row, col, L"", srcFormat, libxl::CELLTYPE_EMPTY);
+			destSheet->writeStr(row, col, L"", srcFormat, CELLTYPE_EMPTY);
 			break;
 		}
-		case libxl::CELLTYPE_NUMBER:
+		case CELLTYPE_NUMBER:
 		{
 			double d = srcSheet->readNum(row, col);
 			std::cout << d << " [number] << std::endl";
 			destSheet->writeNum(row, col, d, srcFormat);
 			break;
 		}
-		case libxl::CELLTYPE_STRING:
+		case CELLTYPE_STRING:
 		{
 			const wchar_t* s = srcSheet->readStr(row, col);
 			std::cout << std::wstring(s ? s : L"null") << " [string]" << std::endl;
 			destSheet->writeStr(row, col, s, srcFormat);
 			break;
 		}
-		case libxl::CELLTYPE_BOOLEAN:
+		case CELLTYPE_BOOLEAN:
 		{
 			bool b = srcSheet->readBool(row, col);
 			std::cout << (b ? "true" : "false") << " [boolean]" << std::endl;
 			destSheet->writeBool(row, col, b, srcFormat);
 			break;
 		}
-		case libxl::CELLTYPE_BLANK:
+		case CELLTYPE_BLANK:
 		{
 			//std::cout << "[blank]" << std::endl;
 			destSheet->writeBlank(row, col, srcFormat);
 			break;
 		}
-		case libxl::CELLTYPE_ERROR:
+		case CELLTYPE_ERROR:
 		{
 			auto e = srcSheet->readError(row, col);
 			std::cout << "[error]" << std::endl;
@@ -182,13 +183,13 @@ void cFrame::CopyCell(libxl::Sheet* srcSheet, libxl::Sheet* destSheet, int row, 
 	}
 }
 
-int cFrame::getCommentCol(libxl::Sheet* sheet, int row)
+int cFrame::getCommentCol(Sheet* sheet, int row)
 {
 	bool commentsFound = false;
 	int col = 0;
 	for (col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
 	{
-		if (sheet->cellType(row, col) == libxl::CELLTYPE_STRING)
+		if (sheet->cellType(row, col) == CELLTYPE_STRING)
 		{
 			std::wstring cellData(sheet->readStr(row, col));
 			std::transform(cellData.begin(), cellData.end(), cellData.begin(),

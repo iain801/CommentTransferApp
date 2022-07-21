@@ -1,3 +1,4 @@
+#pragma comment (lib, "libxl.lib")
 #pragma once
 
 #include "wx/wx.h"

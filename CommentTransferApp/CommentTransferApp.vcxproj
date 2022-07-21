@@ -27,9 +27,6 @@
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cFrame.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -100,8 +97,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\libxl-win-static-vs2019-MT-4.0.3;C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl-win-static-vs2019-MD-4.0.3;C:\src\libxl\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)libxl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);libxl.lib</AdditionalDependencies>
       <LinkStatus>false</LinkStatus>
       <OptimizeReferences>false</OptimizeReferences>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
@@ -125,8 +122,8 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\libxl-win-static-vs2019-MT-4.0.3;C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl-win-static-vs2019-MD-4.0.3;C:\src\libxl\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)libxl.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);libxl.lib</AdditionalDependencies>
       <LinkStatus>false</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -143,7 +140,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_x64_lib;C:\src\libxl\lib64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies)libxl.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);libxl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,7 +159,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_x64_lib;C:\src\libxl\lib64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies)libxl.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);libxl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
