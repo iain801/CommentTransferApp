@@ -22,10 +22,12 @@
   <ItemGroup>
     <ClInclude Include="cApp.h" />
     <ClInclude Include="cFrame.h" />
+    <ClInclude Include="cTransfer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cFrame.cpp" />
+    <ClCompile Include="cTransfer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
