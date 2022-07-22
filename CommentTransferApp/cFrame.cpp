@@ -15,7 +15,7 @@ cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoi
 {
 	btn1 = new wxButton(this, 10001, "Copy Comments", wxPoint(10, 90), wxSize(150, 30));
 	rowText = new wxStaticText(this, wxID_ANY, "Start row: ", wxPoint(205, 97));
-	rowInput = new wxTextCtrl(this, wxID_ANY, "6", wxPoint(260, 95), wxSize(30, 20), 0L, wxIntegerValidator<unsigned int>());
+	rowInput = new wxTextCtrl(this, wxID_ANY, "", wxPoint(260, 95), wxSize(30, 20), 0L, wxIntegerValidator<unsigned int>());
 	srcText = new wxStaticText(this, wxID_ANY, "Commented Spreadsheet: ", wxPoint(10, 2));
 	srcFile = new wxFilePickerCtrl(this, 10002, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 20), wxSize(300, 20));
 	srcText = new wxStaticText(this, wxID_ANY, "Data Spreadsheet: ", wxPoint(10, 42));
@@ -39,12 +39,19 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 	std::wstring srcPath = srcFile->GetPath().ToStdWstring();
 	std::wstring destPath = dstFile->GetPath().ToStdWstring();
 	//output->Clear();
-	int row = std::stoi(rowInput->GetLineText(0).ToStdString()) - 1;
-
-	cTransfer* transfer = new cTransfer(srcPath, destPath, row);
-	transfer->CopyBook();
-	delete transfer;
-	btn1->SetLabelText("Finished!");
+	auto rowText = rowInput->GetLineText(0).ToStdString();
+	if (!rowText.empty())
+	{
+		int row = std::stoi(rowText) - 1;
+		cTransfer* transfer = new cTransfer(srcPath, destPath, row);
+		transfer->CopyBook();
+		delete transfer;
+		btn1->SetLabelText("Finished!");
+	}
+	else
+	{
+		btn1->SetLabelText("No Row Selected");
+	}
 	evt.Skip();
 }
 

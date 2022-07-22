@@ -53,13 +53,11 @@ cTransfer::~cTransfer() {
 void cTransfer::CopyBook()
 {
 	int numSrcSheets = src->sheetCount();
-	int numDestSheets = dest->sheetCount();
-	if (numSrcSheets != numDestSheets)
-		std::wcout << "ERROR: Mismatched sheet counts" << std::endl;
-	else for (int sheet = 0; sheet < numSrcSheets; sheet++)
+
+	for (int sheet = 0; sheet < numSrcSheets; sheet++)
 	{
 		srcSheet = src->getSheet(sheet);
-		destSheet = dest->getSheet(sheet);
+		destSheet = dest->getSheet(getSheet(dest, srcSheet->name()));
 		if (srcSheet && destSheet)
 		{
 			std::wcout << "Loaded sheet " << sheet << ": " << std::wstring(srcSheet->name()) << std::endl;
@@ -72,20 +70,46 @@ void cTransfer::CopyBook()
 	}
 }
 
+int cTransfer::getSheet(libxl::Book* book, std::wstring label)
+{
+	for (int sheet = 0; sheet < book->sheetCount(); sheet++)
+	{
+		std::wstring sheetName(book->getSheetName(sheet));
+		if (sheetName.compare(label) == 0)
+			return sheet;
+	}
+	return -1;
+}
 
 void cTransfer::CopySheet()
 {
-	int srcCol = getCol(srcSheet, L"comment");
-	int destCol = getCol(destSheet, L"comment");
-	if ( srcCol != destCol )
-		std::wcout << "WARNING: Mismatched sheets " << srcSheet->name() << " and " << destSheet->name() << std::endl;
-	
-	std::wcout << "Inserting comments at column " << (char)(destCol + 'A') << " from column " << (char)(srcCol + 'A') << std::endl;
-	for (int row = srcSheet->firstRow(); row < srcSheet->lastRow(); ++row)
+	int srcIDCol = getCol(srcSheet, L"unique");
+	int destIDCol = getCol(destSheet, L"unique");
+
+	std::list<int> srcCommList = getColList(srcSheet, L"comment");
+	for (int srcCommCol : srcCommList)
 	{
-		CopyCell(row, row, srcCol, destCol);
+		std::wstring destCommHeader(srcSheet->readStr(headRow, srcCommCol));
+		int destCommCol = getCol(destSheet, destCommHeader);
+		CopyCell(headRow, headRow, srcCommCol, destCommCol);
+		for (int srcRow = headRow + 1; srcRow < srcSheet->lastRow(); ++srcRow)
+		{
+			int destRow = getRow(destSheet, srcSheet->readStr(srcRow, srcIDCol), destIDCol);
+			if (destRow != -1)
+				CopyCell(srcRow, destRow, srcCommCol, destCommCol);
+		}
+
+		auto srcFormat = srcSheet->cellFormat(headRow + 1, srcCommCol);
+		for (int destRow = headRow + 1; destRow < destSheet->lastRow(); ++destRow)
+		{
+			auto cellType = destSheet->cellType(destRow, destCommCol);
+			if (cellType == CELLTYPE_BLANK)
+				destSheet->writeBlank(destRow, destCommCol, srcFormat);
+			else if (cellType == CELLTYPE_EMPTY)
+				destSheet->writeStr(destRow, destCommCol, L"", srcFormat, CELLTYPE_EMPTY);	
+		}
+		destSheet->setCol(destCommCol,destCommCol, srcSheet->colWidth(srcCommCol));
 	}
-	
 }
 
 void cTransfer::CopyCell(int row, int col)
@@ -151,11 +175,31 @@ void cTransfer::CopyCell(int srcRow, int destRow, int srcCol, int destCol)
 	}
 }
 
+int cTransfer::getRow(libxl::Sheet* sheet, std::wstring label, int idCol)
+{
+	for (int row = headRow; row < sheet->lastFilledRow(); row++)
+	{
+		std::wstring cellData(sheet->readStr(row, idCol));
+		if (cellData.compare(label) == 0)
+			return row;
+	}
+	return -1;
+}
+
+
 int cTransfer::getCol(Sheet* sheet, std::wstring label)
 {
-	bool commentsFound = false;
-	int col = 0;
-	for (col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
+	auto colList = getColList(sheet, label);
+	if (colList.empty())
+		return sheet->lastFilledCol();
+	else
+		return colList.front();
+}
+
+std::list<int> cTransfer::getColList(Sheet* sheet, std::wstring label)
+{
+	std::list<int> colList(0);
+	for (int col = sheet->firstFilledCol(); col < sheet->lastFilledCol(); col++)
 	{
 		if (sheet->cellType(headRow, col) == CELLTYPE_STRING)
 		{
@@ -163,8 +207,8 @@ int cTransfer::getCol(Sheet* sheet, std::wstring label)
 			std::transform(cellData.begin(), cellData.end(), cellData.begin(),
 				[](wchar_t c) { return tolower(c); });
 			if (cellData.find(label) != std::wstring::npos)
-				return col;
+				colList.push_back(col);
 		}
 	}
-	return sheet->lastFilledCol();
+	return colList;
 }

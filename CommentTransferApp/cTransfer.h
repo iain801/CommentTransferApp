@@ -1,6 +1,7 @@
 #pragma once
 #include "libxl.h"
 #include <string>
+#include <list>
 
 class cTransfer
 {
@@ -23,6 +24,9 @@ private:
 	void CopySheet();
 	void CopyCell(int row, int col);
 	void CopyCell(int srcRow, int destRow, int srcCol, int destCol);
+	int getSheet(libxl::Book* book, std::wstring label);
+	int getRow(libxl::Sheet* sheet, std::wstring label, int idCol);
 	int getCol(libxl::Sheet* sheet, std::wstring label);
+	std::list<int> getColList(libxl::Sheet* sheet, std::wstring label);
 };
 
