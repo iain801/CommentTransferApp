@@ -4,6 +4,8 @@
 
 wxBEGIN_EVENT_TABLE(cFrame, wxFrame)
 	EVT_BUTTON(10001, PerformTransfer)
+	EVT_FILEPICKER_CHANGED(10002, ResetButton)
+	EVT_FILEPICKER_CHANGED(10003, ResetButton)
 wxEND_EVENT_TABLE()
 
 
@@ -15,9 +17,9 @@ cFrame::cFrame() : wxFrame(nullptr, wxID_ANY, "Comment Transfer - Erasca", wxPoi
 	rowText = new wxStaticText(this, wxID_ANY, "Start row: ", wxPoint(205, 97));
 	rowInput = new wxTextCtrl(this, wxID_ANY, "6", wxPoint(260, 95), wxSize(30, 20), 0L, wxIntegerValidator<unsigned int>());
 	srcText = new wxStaticText(this, wxID_ANY, "Commented Spreadsheet: ", wxPoint(10, 2));
-	srcFile = new wxFilePickerCtrl(this, wxID_ANY, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 20), wxSize(300, 20));
+	srcFile = new wxFilePickerCtrl(this, 10002, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 20), wxSize(300, 20));
 	srcText = new wxStaticText(this, wxID_ANY, "Data Spreadsheet: ", wxPoint(10, 42));
-	dstFile = new wxFilePickerCtrl(this, wxID_ANY, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 60), wxSize(300, 20));
+	dstFile = new wxFilePickerCtrl(this, 10003, "", "", "XLSX and XLS files (*.xlsx;*.xls)|*.xlsx;*.xls", wxPoint(10, 60), wxSize(300, 20));
 	//output = new wxTextCtrl (this, wxID_ANY, "", wxPoint(10, 135), wxSize(300, 200), wxTE_READONLY + wxTE_MULTILINE);
 
 	//wxStreamToTextRedirector redirect(output);
@@ -33,7 +35,7 @@ cFrame::~cFrame()
 void cFrame::PerformTransfer(wxCommandEvent& evt)
 {
 	//wxStreamToTextRedirector redirect(output, std::wcout);
-
+	btn1->SetLabelText("Running...");
 	std::wstring srcPath = srcFile->GetPath().ToStdWstring();
 	std::wstring destPath = dstFile->GetPath().ToStdWstring();
 	//output->Clear();
@@ -42,6 +44,12 @@ void cFrame::PerformTransfer(wxCommandEvent& evt)
 	cTransfer* transfer = new cTransfer(srcPath, destPath, row);
 	transfer->CopyBook();
 	delete transfer;
+	btn1->SetLabelText("Finished!");
+	evt.Skip();
+}
 
+void cFrame::ResetButton(wxFileDirPickerEvent& evt)
+{
+	btn1->SetLabelText("Copy Comments");
 	evt.Skip();
 }

@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\src\wxWidgets-3.2.0\include;C:\src\wxWidgets-3.2.0\include\msvc;C:\src\libxl\include_cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)wxWidgets-3.2.0\include;$(SolutionDir)wxWidgets-3.2.0\include\msvc;$(SolutionDir)libxl\include_cpp</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -98,7 +98,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)wxWidgets-3.2.0\lib\vc_lib;$(SolutionDir)libxl\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);libxl.lib</AdditionalDependencies>
       <LinkStatus>false</LinkStatus>
       <OptimizeReferences>false</OptimizeReferences>
@@ -114,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\src\wxWidgets-3.2.0\include;C:\src\wxWidgets-3.2.0\include\msvc;C:\src\libxl\include_cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)wxWidgets-3.2.0\include;$(SolutionDir)wxWidgets-3.2.0\include\msvc;$(SolutionDir)libxl\include_cpp</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -123,7 +123,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_lib;C:\src\libxl\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)wxWidgets-3.2.0\lib\vc_lib;$(SolutionDir)libxl\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);libxl.lib</AdditionalDependencies>
       <LinkStatus>false</LinkStatus>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -135,12 +135,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\src\wxWidgets-3.2.0\include;C:\src\wxWidgets-3.2.0\include\msvc;C:\src\libxl\include_cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)wxWidgets-3.2.0\include;$(SolutionDir)wxWidgets-3.2.0\include\msvc;$(SolutionDir)libxl\include_cpp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_x64_lib;C:\src\libxl\lib64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)wxWidgets-3.2.0\lib\vc_x64_lib;$(SolutionDir)libxl\lib64</AdditionalLibraryDirectories>
       <AdditionalDependencies>$(CoreLibraryDependencies);libxl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -152,14 +152,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\src\wxWidgets-3.2.0\include;C:\src\wxWidgets-3.2.0\include\msvc;C:\src\libxl\include_cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)wxWidgets-3.2.0\include;$(SolutionDir)wxWidgets-3.2.0\include\msvc;$(SolutionDir)libxl\include_cpp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\src\wxWidgets-3.2.0\lib\vc_x64_lib;C:\src\libxl\lib64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)wxWidgets-3.2.0\lib\vc_x64_lib;$(SolutionDir)libxl\lib64</AdditionalLibraryDirectories>
       <AdditionalDependencies>$(CoreLibraryDependencies);libxl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

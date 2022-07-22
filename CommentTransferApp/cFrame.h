@@ -22,6 +22,7 @@ public:
 	wxStaticText* rowText = nullptr;
 
 	void PerformTransfer(wxCommandEvent& evt);
+	void ResetButton(wxFileDirPickerEvent& evt);
 
 	wxDECLARE_EVENT_TABLE();
 
