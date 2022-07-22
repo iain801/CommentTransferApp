@@ -1,8 +1,5 @@
 #include "cTransfer.h"
 #include <algorithm>
-#include <cctype>
-#include <locale>
-#include <codecvt>
 #include <iostream>
 
 using namespace libxl;
