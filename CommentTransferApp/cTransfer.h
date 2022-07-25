@@ -10,7 +10,8 @@ public:
 		unsigned int headRow);
 	~cTransfer();
 
-	void CopyBook();
+	int CopyBook();
+	bool isID();
 
 private:
 	unsigned int headRow;
@@ -26,7 +27,7 @@ private:
 	void CopyCell(int srcRow, int destRow, int srcCol, int destCol);
 	int getSheet(libxl::Book* book, std::wstring label);
 	int getRow(libxl::Sheet* sheet, std::wstring label, int idCol);
-	int getCol(libxl::Sheet* sheet, std::wstring label);
+	int getCol(libxl::Sheet* sheet, std::wstring label, bool comment=true);
 	std::list<int> getColList(libxl::Sheet* sheet, std::wstring label);
 };
 

@@ -47,7 +47,7 @@ cTransfer::~cTransfer() {
 	dest->release();
 }
 
-void cTransfer::CopyBook()
+int cTransfer::CopyBook()
 {
 	int numSrcSheets = src->sheetCount();
 
@@ -62,9 +62,10 @@ void cTransfer::CopyBook()
 		}
 		else
 		{
-			std::wcout << "ERROR: Sheet " << sheet << " not loaded" << std::endl;
+			std::wcout << "ERROR: Sheet " << sheet << " not loaded" << std::endl; 
 		}
 	}
+	return 0;
 }
 
 int cTransfer::getSheet(libxl::Book* book, std::wstring label)
@@ -80,8 +81,8 @@ int cTransfer::getSheet(libxl::Book* book, std::wstring label)
 
 void cTransfer::CopySheet()
 {
-	int srcIDCol = getCol(srcSheet, L"unique");
-	int destIDCol = getCol(destSheet, L"unique");
+	int srcIDCol = getCol(srcSheet, L"unique", false);
+	int destIDCol = getCol(destSheet, L"unique", false);
 
 	std::list<int> srcCommList = getColList(srcSheet, L"comment");
 	for (int srcCommCol : srcCommList)
@@ -107,6 +108,12 @@ void cTransfer::CopySheet()
 		}
 		destSheet->setCol(destCommCol,destCommCol, srcSheet->colWidth(srcCommCol));
 	}
+}
+
+bool cTransfer::isID()
+{
+	return getCol(src->getSheet(0), L"unique", false) != -1 
+		&& getCol(dest->getSheet(0), L"unique", false) != -1;
 }
 
 void cTransfer::CopyCell(int row, int col)
@@ -184,11 +191,14 @@ int cTransfer::getRow(libxl::Sheet* sheet, std::wstring label, int idCol)
 }
 
 
-int cTransfer::getCol(Sheet* sheet, std::wstring label)
+int cTransfer::getCol(Sheet* sheet, std::wstring label, bool comment)
 {
 	auto colList = getColList(sheet, label);
 	if (colList.empty())
-		return sheet->lastFilledCol();
+		if (comment)
+			return sheet->lastFilledCol();
+		else
+			return -1;
 	else
 		return colList.front();
 }
